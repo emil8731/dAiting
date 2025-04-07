@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}Dating App AI Assistant - Matches{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h1 class="mb-3">Your Matches</h1>
+        <p class="lead">Browse your matches from {{ platform|capitalize }} and start conversations.</p>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <form class="row g-3" method="get" action="{{ url_for('matches') }}">
+                    <div class="col-md-4">
+                        <label for="platformFilter" class="form-label">Platform</label>
+                        <select class="form-select" id="platformFilter" name="platform">
+                            <option value="tinder" {% if platform == 'tinder' %}selected{% endif %}>Tinder</option>
+                            <option value="hinge" {% if platform == 'hinge' %}selected{% endif %}>Hinge</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="limitFilter" class="form-label">Limit</label>
+                        <select class="form-select" id="limitFilter" name="limit">
+                            <option value="10" {% if request.args.get('limit') == '10' %}selected{% endif %}>10</option>
+                            <option value="20" {% if request.args.get('limit') == '20' %}selected{% endif %}>20</option>
+                            <option value="50" {% if request.args.get('limit') == '50' %}selected{% endif %}>50</option>
+                            <option value="100" {% if request.args.get('limit') == '100' %}selected{% endif %}>100</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-filter me-2"></i>Apply Filters
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if matches %}
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    {% for match in matches %}
+    <div class="col">
+        <div class="card match-card h-100">
+            {% if match.photos %}
+            <img src="{{ match.photos.split(',')[0] }}" class="card-img-top" alt="{{ match.name }}">
+            {% else %}
+            <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                <i class="bi bi-person-circle text-muted" style="font-size: 5rem;"></i>
+            </div>
+            {% endif %}
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h5 class="card-title mb-0">{{ match.name }}</h5>
+                    <span class="badge bg-primary">{{ match.age }}</span>
+                </div>
+                
+                {% if match.bio %}
+                <p class="card-text">{{ match.bio[:100] }}{% if match.bio|length > 100 %}...{% endif %}</p>
+                {% else %}
+                <p class="card-text text-muted"><em>No bio available</em></p>
+                {% endif %}
+                
+                {% if match.interests %}
+                <div class="mb-3">
+                    {% set interests = match.interests.split(',') if match.interests is string else match.interests %}
+                    {% for interest in interests[:3] %}
+                    <span class="badge bg-secondary me-1">{{ interest }}</span>
+                    {% endfor %}
+                    {% if interests|length > 3 %}
+                    <span class="badge bg-light text-dark">+{{ interests|length - 3 }} more</span>
+                    {% endif %}
+                </div>
+                {% endif %}
+                
+                <div class="d-flex justify-content-between">
+                    <a href="{{ url_for('match_detail', match_id=match.id) }}" class="btn btn-outline-primary">
+                        <i class="bi bi-info-circle me-1"></i>Details
+                    </a>
+                    <a href="{{ url_for('generate_message', match_id=match.id) }}" class="btn btn-primary">
+                        <i class="bi bi-chat-dots me-1"></i>Message
+                    </a>
+                </div>
+            </div>
+            <div class="card-footer text-muted">
+                <small>
+                    {% if match.job %}
+                    <i class="bi bi-briefcase me-1"></i>{{ match.job }}
+                    {% endif %}
+                    {% if match.education %}
+                    <i class="bi bi-book me-1"></i>{{ match.education }}
+                    {% endif %}
+                    {% if match.location %}
+                    <i class="bi bi-geo-alt me-1"></i>{{ match.location }}
+                    {% endif %}
+                </small>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-5">
+    <i class="bi bi-people display-1 text-muted mb-3"></i>
+    <h3>No matches found</h3>
+    <p class="text-muted">No matches were found for the selected platform.</p>
+    <div class="mt-4">
+        <a href="{{ url_for('dashboard') }}" class="btn btn-primary">
+            <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
+        </a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

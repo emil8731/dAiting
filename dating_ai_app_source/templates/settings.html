@@ -1,0 +1,316 @@
+{% extends "base.html" %}
+
+{% block title %}Dating App AI Assistant - Settings{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h1 class="mb-3">Settings</h1>
+        <p class="lead">Configure your Dating App AI Assistant preferences.</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Notification Settings -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-bell me-2"></i>Notification Settings</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{{ url_for('settings') }}">
+                    <div class="form-check form-switch mb-4">
+                        <input class="form-check-input" type="checkbox" id="notification_enabled" name="notification_enabled" 
+                               {% if notification_config.enabled %}checked{% endif %}>
+                        <label class="form-check-label" for="notification_enabled">Enable Notifications</label>
+                    </div>
+                    
+                    <h6 class="mb-3">Notification Types</h6>
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="new_message_notification" name="new_message_notification" 
+                                       {% if notification_config.notification_types.new_message %}checked{% endif %}>
+                                <label class="form-check-label" for="new_message_notification">New Messages</label>
+                            </div>
+                            
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="new_match_notification" name="new_match_notification" 
+                                       {% if notification_config.notification_types.new_match %}checked{% endif %}>
+                                <label class="form-check-label" for="new_match_notification">New Matches</label>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="conversation_inactive_notification" name="conversation_inactive_notification" 
+                                       {% if notification_config.notification_types.conversation_inactive %}checked{% endif %}>
+                                <label class="form-check-label" for="conversation_inactive_notification">Inactive Conversations</label>
+                            </div>
+                            
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="suggested_response_notification" name="suggested_response_notification" 
+                                       {% if notification_config.notification_types.suggested_response %}checked{% endif %}>
+                                <label class="form-check-label" for="suggested_response_notification">Suggested Responses</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h6 class="mb-3">Notification Channels</h6>
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="console_notification" name="console_notification" 
+                                       {% if notification_config.channels.console %}checked{% endif %}>
+                                <label class="form-check-label" for="console_notification">In-App Notifications</label>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="email_notification" name="email_notification" 
+                                       {% if notification_config.channels.email %}checked{% endif %}>
+                                <label class="form-check-label" for="email_notification">Email Notifications</label>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="push_notification" name="push_notification" 
+                                       {% if notification_config.channels.push %}checked{% endif %}>
+                                <label class="form-check-label" for="push_notification">Push Notifications</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h6 class="mb-3">Quiet Hours</h6>
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="quiet_hours_enabled" name="quiet_hours_enabled" 
+                                       {% if notification_config.quiet_hours.enabled %}checked{% endif %}>
+                                <label class="form-check-label" for="quiet_hours_enabled">Enable Quiet Hours</label>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label for="quiet_hours_start" class="form-label">Start Time</label>
+                            <select class="form-select" id="quiet_hours_start" name="quiet_hours_start">
+                                {% for hour in range(24) %}
+                                <option value="{{ hour }}" {% if notification_config.quiet_hours.start_hour == hour %}selected{% endif %}>
+                                    {{ "%02d"|format(hour) }}:00
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label for="quiet_hours_end" class="form-label">End Time</label>
+                            <select class="form-select" id="quiet_hours_end" name="quiet_hours_end">
+                                {% for hour in range(24) %}
+                                <option value="{{ hour }}" {% if notification_config.quiet_hours.end_hour == hour %}selected{% endif %}>
+                                    {{ "%02d"|format(hour) }}:00
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save me-2"></i>Save Settings
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Email Settings -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-envelope me-2"></i>Email Settings</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{{ url_for('settings') }}">
+                    <input type="hidden" name="settings_type" value="email">
+                    
+                    <div class="mb-3">
+                        <label for="email_address" class="form-label">Email Address</label>
+                        <input type="email" class="form-control" id="email_address" name="email_address" 
+                               value="{{ notification_config.email_settings.from_address }}">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="smtp_server" class="form-label">SMTP Server</label>
+                        <input type="text" class="form-control" id="smtp_server" name="smtp_server" 
+                               value="{{ notification_config.email_settings.smtp_server }}">
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="smtp_port" class="form-label">SMTP Port</label>
+                            <input type="number" class="form-control" id="smtp_port" name="smtp_port" 
+                                   value="{{ notification_config.email_settings.smtp_port }}">
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="smtp_username" class="form-label">SMTP Username</label>
+                            <input type="text" class="form-control" id="smtp_username" name="smtp_username" 
+                                   value="{{ notification_config.email_settings.username }}">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="smtp_password" class="form-label">SMTP Password</label>
+                        <input type="password" class="form-control" id="smtp_password" name="smtp_password" 
+                               value="{{ notification_config.email_settings.password|default('') }}">
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save me-2"></i>Save Email Settings
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <!-- Account Settings -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-person-circle me-2"></i>Account Settings</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex flex-column gap-3">
+                    <div>
+                        <h6>Connected Platforms:</h6>
+                        <div class="d-flex flex-column gap-2 mt-2">
+                            {% if session.platform == 'tinder' %}
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span><i class="bi bi-fire me-2"></i>Tinder</span>
+                                <span class="badge bg-success">Connected</span>
+                            </div>
+                            {% else %}
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span><i class="bi bi-fire me-2"></i>Tinder</span>
+                                <a href="{{ url_for('auth') }}" class="btn btn-sm btn-outline-primary">Connect</a>
+                            </div>
+                            {% endif %}
+                            
+                            {% if session.platform == 'hinge' %}
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span><i class="bi bi-infinity me-2"></i>Hinge</span>
+                                <span class="badge bg-success">Connected</span>
+                            </div>
+                            {% else %}
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span><i class="bi bi-infinity me-2"></i>Hinge</span>
+                                <a href="{{ url_for('auth') }}" class="btn btn-sm btn-outline-primary">Connect</a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 mt-3">
+                        <a href="{{ url_for('auth') }}" class="btn btn-outline-primary">
+                            <i class="bi bi-shield-lock me-2"></i>Manage Authentication
+                        </a>
+                        <a href="{{ url_for('logout') }}" class="btn btn-outline-danger">
+                            <i class="bi bi-box-arrow-right me-2"></i>Logout
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Data Management -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-database me-2"></i>Data Management</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex flex-column gap-3">
+                    <div>
+                        <h6>Storage Usage:</h6>
+                        <div class="progress mt-2" style="height: 20px;">
+                            <div class="progress-bar bg-primary" role="progressbar" style="width: 35%;" 
+                                 aria-valuenow="35" aria-valuemin="0" aria-valuemax="100">
+                                35%
+                            </div>
+                        </div>
+                        <div class="small text-muted mt-1">
+                            Using 35 MB of 100 MB
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 mt-3">
+                        <button type="button" class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#clearDataModal">
+                            <i class="bi bi-trash me-2"></i>Clear All Data
+                        </button>
+                        <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#exportDataModal">
+                            <i class="bi bi-download me-2"></i>Export Data
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Clear Data Modal -->
+<div class="modal fade" id="clearDataModal" tabindex="-1" aria-labelledby="clearDataModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="clearDataModalLabel">Clear All Data</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-danger">Warning: This action will delete all your data including matches, conversations, and settings. This action cannot be undone.</p>
+                <p>Are you sure you want to proceed?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger">Clear All Data</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Export Data Modal -->
+<div class="modal fade" id="exportDataModal" tabindex="-1" aria-labelledby="exportDataModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exportDataModalLabel">Export Data</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Select the data you want to export:</p>
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="exportMatches" checked>
+                    <label class="form-check-label" for="exportMatches">Matches</label>
+                </div>
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="exportConversations" checked>
+                    <label class="form-check-label" for="exportConversations">Conversations</label>
+                </div>
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="exportSettings" checked>
+                    <label class="form-check-label" for="exportSettings">Settings</label>
+                </div>
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="exportStats" checked>
+                    <label class="form-check-label" for="exportStats">Statistics</label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary">Export Data</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

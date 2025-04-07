@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}Dating App AI Assistant - Home{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10 col-lg-8">
+        <div class="card shadow-lg border-0 mb-5">
+            <div class="card-body p-5 text-center">
+                <h1 class="display-4 mb-4">
+                    <i class="bi bi-heart-fill text-danger me-3"></i>Dating App AI Assistant
+                </h1>
+                <p class="lead mb-4">
+                    Enhance your online dating experience with AI-powered conversation management
+                </p>
+                
+                {% if not session.authenticated %}
+                <div class="d-grid gap-2 col-md-6 mx-auto">
+                    <a href="{{ url_for('auth') }}" class="btn btn-primary btn-lg">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>Get Started
+                    </a>
+                </div>
+                {% else %}
+                <div class="d-grid gap-2 col-md-6 mx-auto">
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg">
+                        <i class="bi bi-speedometer2 me-2"></i>Go to Dashboard
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="bi bi-search fs-1 text-primary mb-3"></i>
+                        <h3 class="card-title">Profile Analysis</h3>
+                        <p class="card-text">Automatically analyze match profiles to identify interests, conversation hooks, and compatibility factors.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="bi bi-chat-dots fs-1 text-primary mb-3"></i>
+                        <h3 class="card-title">Smart Messaging</h3>
+                        <p class="card-text">Generate personalized messages based on profile information and conversation context.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="bi bi-graph-up fs-1 text-primary mb-3"></i>
+                        <h3 class="card-title">Conversation Insights</h3>
+                        <p class="card-text">Track conversation statistics and get actionable insights to improve engagement.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-5 p-4 bg-light rounded-3">
+            <h2 class="mb-4">How It Works</h2>
+            <div class="row">
+                <div class="col-md-6">
+                    <ol class="list-group list-group-numbered mb-4">
+                        <li class="list-group-item d-flex">
+                            <div>
+                                <strong>Connect your dating account</strong>
+                                <p class="mb-0 text-muted">Securely authenticate with Tinder or Hinge</p>
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex">
+                            <div>
+                                <strong>Browse your matches</strong>
+                                <p class="mb-0 text-muted">View profiles and analyze compatibility</p>
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex">
+                            <div>
+                                <strong>Generate personalized messages</strong>
+                                <p class="mb-0 text-muted">Create engaging conversation starters</p>
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex">
+                            <div>
+                                <strong>Manage conversations</strong>
+                                <p class="mb-0 text-muted">Get response suggestions and conversation insights</p>
+                            </div>
+                        </li>
+                    </ol>
+                </div>
+                <div class="col-md-6">
+                    <div class="card mb-3">
+                        <div class="card-header bg-primary text-white">
+                            <i class="bi bi-shield-lock me-2"></i>Privacy & Security
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-unstyled">
+                                <li><i class="bi bi-check-circle-fill text-success me-2"></i>Your data is stored locally</li>
+                                <li><i class="bi bi-check-circle-fill text-success me-2"></i>Authentication tokens are encrypted</li>
+                                <li><i class="bi bi-check-circle-fill text-success me-2"></i>No data is shared with third parties</li>
+                                <li><i class="bi bi-check-circle-fill text-success me-2"></i>You approve all messages before sending</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

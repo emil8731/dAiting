@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+
+{% block title %}Dating App AI Assistant - Match Details{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('matches') }}">Matches</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ match.name }}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Match Profile -->
+    <div class="col-lg-4 mb-4">
+        <div class="card">
+            <div class="card-body text-center">
+                {% if match.photos %}
+                <div id="matchPhotos" class="carousel slide mb-4" data-bs-ride="carousel">
+                    <div class="carousel-inner">
+                        {% set photos = match.photos.split(',') if match.photos is string else match.photos %}
+                        {% for photo in photos %}
+                        <div class="carousel-item {% if loop.first %}active{% endif %}">
+                            <img src="{{ photo }}" class="d-block w-100 rounded" alt="{{ match.name }} photo {{ loop.index }}">
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% if photos|length > 1 %}
+                    <button class="carousel-control-prev" type="button" data-bs-target="#matchPhotos" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#matchPhotos" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                    {% endif %}
+                </div>
+                {% else %}
+                <div class="mb-4 bg-light d-flex align-items-center justify-content-center rounded" style="height: 300px;">
+                    <i class="bi bi-person-circle text-muted" style="font-size: 8rem;"></i>
+                </div>
+                {% endif %}
+                
+                <h3 class="card-title">{{ match.name }}, {{ match.age }}</h3>
+                
+                <div class="d-flex justify-content-center mb-3">
+                    {% if match.location %}
+                    <span class="badge bg-light text-dark me-2">
+                        <i class="bi bi-geo-alt me-1"></i>{{ match.location }}
+                    </span>
+                    {% endif %}
+                    
+                    {% if match.job %}
+                    <span class="badge bg-light text-dark me-2">
+                        <i class="bi bi-briefcase me-1"></i>{{ match.job }}
+                    </span>
+                    {% endif %}
+                    
+                    {% if match.education %}
+                    <span class="badge bg-light text-dark">
+                        <i class="bi bi-book me-1"></i>{{ match.education }}
+                    </span>
+                    {% endif %}
+                </div>
+                
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('generate_message', match_id=match.id) }}" class="btn btn-primary">
+                        <i class="bi bi-chat-dots me-2"></i>Generate Message
+                    </a>
+                    {% if conversation %}
+                    <a href="{{ url_for('conversation', conversation_id=conversation.id) }}" class="btn btn-outline-primary">
+                        <i class="bi bi-chat-text me-2"></i>View Conversation
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        {% if match.interests %}
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-tags me-2"></i>Interests</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex flex-wrap gap-2">
+                    {% set interests = match.interests.split(',') if match.interests is string else match.interests %}
+                    {% for interest in interests %}
+                    <span class="badge bg-secondary">{{ interest }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Match Details and Analysis -->
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-file-person me-2"></i>Bio</h5>
+            </div>
+            <div class="card-body">
+                {% if match.bio %}
+                <p class="card-text">{{ match.bio }}</p>
+                {% else %}
+                <p class="card-text text-muted"><em>No bio available</em></p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-graph-up me-2"></i>Profile Analysis</h5>
+            </div>
+            <div class="card-body">
+                {% if analysis %}
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <h6>Conversation Hooks</h6>
+                        <ul class="list-group">
+                            {% for hook in analysis.conversation_hooks %}
+                            <li class="list-group-item">{{ hook }}</li>
+                            {% else %}
+                            <li class="list-group-item text-muted"><em>No conversation hooks identified</em></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    
+                    <div class="col-md-6 mb-4">
+                        <h6>Key Topics</h6>
+                        <ul class="list-group">
+                            {% for topic in analysis.topics %}
+                            <li class="list-group-item">{{ topic }}</li>
+                            {% else %}
+                            <li class="list-group-item text-muted"><em>No key topics identified</em></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    
+                    {% if analysis.compatibility_score is defined %}
+                    <div class="col-md-12 mb-4">
+                        <h6>Compatibility Score</h6>
+                        <div class="progress" style="height: 25px;">
+                            <div class="progress-bar bg-primary" role="progressbar" style="width: {{ analysis.compatibility_score }}%;" 
+                                 aria-valuenow="{{ analysis.compatibility_score }}" aria-valuemin="0" aria-valuemax="100">
+                                {{ analysis.compatibility_score }}%
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if analysis.suggestions %}
+                    <div class="col-md-12">
+                        <h6>Conversation Suggestions</h6>
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <ul class="mb-0">
+                                    {% for suggestion in analysis.suggestions %}
+                                    <li>{{ suggestion }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="bi bi-search display-4 text-muted mb-3"></i>
+                    <p>No profile analysis available. Generate a message to analyze this profile.</p>
+                    <a href="{{ url_for('generate_message', match_id=match.id) }}" class="btn btn-primary">
+                        <i class="bi bi-chat-dots me-2"></i>Generate Message
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        {% if conversation %}
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-chat-text me-2"></i>Conversation Preview</h5>
+                <a href="{{ url_for('conversation', conversation_id=conversation.id) }}" class="btn btn-sm btn-outline-primary">
+                    View Full Conversation
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="message-container">
+                    {% for message in conversation.messages[:5] %}
+                    <div class="message {{ 'message-user' if message.sender_type == 'user' else 'message-match' }}">
+                        {{ message.content }}
+                        <div class="message-time">{{ message.sent_at|format_datetime }}</div>
+                    </div>
+                    {% endfor %}
+                    
+                    {% if conversation.messages|length > 5 %}
+                    <div class="text-center mt-3">
+                        <a href="{{ url_for('conversation', conversation_id=conversation.id) }}" class="btn btn-sm btn-outline-primary">
+                            View {{ conversation.messages|length - 5 }} more messages
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

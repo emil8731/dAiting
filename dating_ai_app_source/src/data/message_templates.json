@@ -1,0 +1,90 @@
+"""
+Message template data for the dating app AI assistant.
+Contains templates for different message categories.
+"""
+
+{
+  "opener": [
+    "Hey {name}, {hook}",
+    "Hi {name}! I noticed {interest} in your profile. {hook}",
+    "Hello {name}! {hook} How's your day going?",
+    "Hey {name}! I see we both like {interest}. {hook}",
+    "Hi there {name}! {hook}",
+    "{name}! Your profile caught my attention. {hook}",
+    "I had to message you when I saw {interest} in your profile. {hook}",
+    "Hey {name}, I'm curious about {interest} you mentioned. {hook}"
+  ],
+  "follow_up": [
+    "That's really interesting! {hook}",
+    "I can relate to that. {hook}",
+    "I'd love to hear more about {interest}. {hook}",
+    "Thanks for sharing that! {hook}",
+    "I've been thinking about what you said. {hook}",
+    "That's exactly how I feel about it too! {hook}",
+    "I never thought about it that way. {hook}",
+    "You make a great point. {hook}"
+  ],
+  "question": [
+    "What do you enjoy most about {interest}?",
+    "How did you get into {interest}?",
+    "What's your favorite thing about {interest}?",
+    "Have you been doing {interest} for long?",
+    "What's the best experience you've had with {interest}?",
+    "Any recommendations for someone new to {interest}?",
+    "What drew you to {interest} initially?",
+    "If you could only do {interest} once more, where would you do it?"
+  ],
+  "generic": [
+    "How's your week going so far?",
+    "Any exciting plans for the weekend?",
+    "What's been keeping you busy lately?",
+    "Read any good books or seen any good movies recently?",
+    "What's your idea of a perfect day?",
+    "If you could travel anywhere right now, where would you go?",
+    "What's something you're looking forward to?",
+    "Coffee or tea? Or something else entirely?"
+  ],
+  "humor": [
+    "I was going to come up with a clever opening line, but I figured I'd just say hi instead. So... hi!",
+    "I'm trying to decide if I should start with a joke or a compliment. How about: you have great taste in potential matches!",
+    "Is it just me or did the app get better looking when your profile showed up?",
+    "I'm not saying we're soulmates, but my dog/cat would probably like you, and that's kind of a big deal.",
+    "I promise I'm more interesting than my opening message suggests!",
+    "If dating profiles came with warning labels, what would yours say?"
+  ],
+  "shared_interest": [
+    "I see we both enjoy {interest}. What's your favorite aspect of it?",
+    "Fellow {interest} enthusiast here! What got you into it?",
+    "Always nice to meet another {interest} fan. Any recent discoveries in that area?",
+    "I noticed we share an interest in {interest}. Any recommendations you'd like to share?",
+    "It's not every day I match with someone who also appreciates {interest}. What do you love most about it?"
+  ],
+  "travel": [
+    "I noticed you've been to {interest}. What was your favorite part of visiting there?",
+    "Your travel photos are amazing! What's been your favorite destination so far?",
+    "If you could revisit one place you've traveled to, where would it be and why?",
+    "Any travel destinations on your bucket list?",
+    "What's the most memorable experience you've had while traveling?"
+  ],
+  "food": [
+    "I see you're a foodie too! What's your go-to restaurant?",
+    "If you had to eat one cuisine for the rest of your life, what would it be?",
+    "What's the best meal you've ever had?",
+    "Are you more of a cook or a restaurant explorer?",
+    "If you could have dinner with anyone, living or dead, who would it be and what would you eat?"
+  ],
+  "music": [
+    "I noticed you're into {interest} music. Been to any good concerts lately?",
+    "What's your go-to song when you need a mood boost?",
+    "If you could see any artist live, who would it be?",
+    "What was the first album/song that really meant something to you?",
+    "Do you play any instruments or is your talent more in appreciation?"
+  ],
+  "career": [
+    "I find your work as a {interest} fascinating. What drew you to that field?",
+    "What's the most rewarding part of your job?",
+    "If you weren't working in your current field, what would you be doing?",
+    "What's something about your job that most people wouldn't know?",
+    "How do you balance work and personal life?"
+  ]
+}

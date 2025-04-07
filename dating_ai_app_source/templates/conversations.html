@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}Dating App AI Assistant - Conversations{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h1 class="mb-3">Conversations</h1>
+        <p class="lead">Manage your ongoing conversations with matches.</p>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <form class="row g-3" method="get" action="{{ url_for('conversations') }}">
+                    <div class="col-md-4">
+                        <label for="platformFilter" class="form-label">Platform</label>
+                        <select class="form-select" id="platformFilter" name="platform">
+                            <option value="">All Platforms</option>
+                            <option value="tinder" {% if request.args.get('platform') == 'tinder' %}selected{% endif %}>Tinder</option>
+                            <option value="hinge" {% if request.args.get('platform') == 'hinge' %}selected{% endif %}>Hinge</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="limitFilter" class="form-label">Limit</label>
+                        <select class="form-select" id="limitFilter" name="limit">
+                            <option value="10" {% if request.args.get('limit') == '10' %}selected{% endif %}>10</option>
+                            <option value="20" {% if request.args.get('limit') == '20' %}selected{% endif %}>20</option>
+                            <option value="50" {% if request.args.get('limit') == '50' %}selected{% endif %}>50</option>
+                            <option value="100" {% if request.args.get('limit') == '100' %}selected{% endif %}>100</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-filter me-2"></i>Apply Filters
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if conversations %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Match</th>
+                                <th>Platform</th>
+                                <th>Last Message</th>
+                                <th>Messages</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for conversation in conversations %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        {% if conversation.match_photo %}
+                                        <img src="{{ conversation.match_photo }}" class="rounded-circle me-2" width="40" height="40" alt="{{ conversation.match_name }}">
+                                        {% else %}
+                                        <div class="bg-light rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                            <i class="bi bi-person text-muted"></i>
+                                        </div>
+                                        {% endif %}
+                                        <div>
+                                            <div class="fw-bold">{{ conversation.match_name }}</div>
+                                            <small class="text-muted">ID: {{ conversation.id[:8] }}...</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary">{{ conversation.platform|capitalize }}</span>
+                                </td>
+                                <td>
+                                    {{ conversation.last_message_at|format_datetime }}
+                                </td>
+                                <td>
+                                    <span class="badge bg-primary rounded-pill">{{ conversation.message_count }}</span>
+                                </td>
+                                <td>
+                                    {% if conversation.status == 'active' %}
+                                    <span class="badge bg-success">Active</span>
+                                    {% elif conversation.status == 'inactive' %}
+                                    <span class="badge bg-warning text-dark">Inactive</span>
+                                    {% elif conversation.status == 'closed' %}
+                                    <span class="badge bg-secondary">Closed</span>
+                                    {% else %}
+                                    <span class="badge bg-info">{{ conversation.status|capitalize }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{{ url_for('conversation', conversation_id=conversation.id) }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-chat-text"></i>
+                                        </a>
+                                        <a href="{{ url_for('generate_response', conversation_id=conversation.id) }}" class="btn btn-sm btn-outline-success">
+                                            <i class="bi bi-reply"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary monitor-button" 
+                                                data-conversation-id="{{ conversation.id }}" 
+                                                data-action="{{ 'stop' if conversation.monitoring else 'start' }}">
+                                            <i class="bi bi-{{ 'stop-circle' if conversation.monitoring else 'play-circle' }}"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="text-center py-5">
+    <i class="bi bi-chat-square-text display-1 text-muted mb-3"></i>
+    <h3>No conversations found</h3>
+    <p class="text-muted">You don't have any active conversations yet.</p>
+    <div class="mt-4">
+        <a href="{{ url_for('matches') }}" class="btn btn-primary">
+            <i class="bi bi-people me-2"></i>Browse Matches
+        </a>
+    </div>
+</div>
+{% endif %}
+
+<!-- Alert Container for JavaScript notifications -->
+<div id="alert-container" class="position-fixed bottom-0 end-0 p-3" style="z-index: 5"></div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        setupConversationMonitoring();
+    });
+</script>
+{% endblock %}

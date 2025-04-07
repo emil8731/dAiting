@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}Dating App AI Assistant - Generate Message{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('matches') }}">Matches</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('match_detail', match_id=match.id) }}">{{ match.name }}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Generate Message</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Match Info -->
+    <div class="col-lg-4 mb-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-person-circle me-2"></i>{{ match.name }}, {{ match.age }}</h5>
+            </div>
+            <div class="card-body">
+                {% if match.photos %}
+                <img src="{{ match.photos.split(',')[0] if match.photos is string else match.photos[0] }}" class="img-fluid rounded mb-3" alt="{{ match.name }}">
+                {% else %}
+                <div class="bg-light d-flex align-items-center justify-content-center rounded mb-3" style="height: 200px;">
+                    <i class="bi bi-person-circle text-muted" style="font-size: 5rem;"></i>
+                </div>
+                {% endif %}
+                
+                {% if match.bio %}
+                <h6>Bio:</h6>
+                <p>{{ match.bio }}</p>
+                {% endif %}
+                
+                {% if match.interests %}
+                <h6>Interests:</h6>
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                    {% set interests = match.interests.split(',') if match.interests is string else match.interests %}
+                    {% for interest in interests %}
+                    <span class="badge bg-secondary">{{ interest }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <div class="d-flex flex-column gap-2">
+                    {% if match.job %}
+                    <div><i class="bi bi-briefcase me-2"></i>{{ match.job }}</div>
+                    {% endif %}
+                    
+                    {% if match.education %}
+                    <div><i class="bi bi-book me-2"></i>{{ match.education }}</div>
+                    {% endif %}
+                    
+                    {% if match.location %}
+                    <div><i class="bi bi-geo-alt me-2"></i>{{ match.location }}</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Message Generation -->
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-chat-dots me-2"></i>Generated Message</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{{ url_for('generate_message', match_id=match.id) }}">
+                    <input type="hidden" name="message_data" value="{{ message_data }}">
+                    
+                    <div class="mb-4">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <p class="mb-0">{{ message.content }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="editedContent" class="form-label">Edit Message (Optional):</label>
+                        <textarea class="form-control" id="editedContent" name="edited_content" rows="4">{{ message.content }}</textarea>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('match_detail', match_id=match.id) }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-2"></i>Back to Profile
+                        </a>
+                        
+                        <div>
+                            <button type="submit" name="action" value="edit" class="btn btn-outline-primary me-2">
+                                <i class="bi bi-pencil me-2"></i>Edit & Send
+                            </button>
+                            <button type="submit" name="action" value="send" class="btn btn-primary">
+                                <i class="bi bi-send me-2"></i>Send as is
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-lightbulb me-2"></i>Message Analysis</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <h6>Message Type:</h6>
+                        <span class="badge bg-primary">{{ message.type|default('Opener') }}</span>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <h6>Personalization Level:</h6>
+                        <div class="progress" style="height: 25px;">
+                            {% set personalization = message.personalization_score|default(85) %}
+                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ personalization }}%;" 
+                                 aria-valuenow="{{ personalization }}" aria-valuemin="0" aria-valuemax="100">
+                                {{ personalization }}%
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-12">
+                        <h6>Message Elements:</h6>
+                        <ul class="list-group">
+                            {% if message.elements %}
+                                {% for element in message.elements %}
+                                <li class="list-group-item">
+                                    <strong>{{ element.type }}:</strong> {{ element.content }}
+                                </li>
+                                {% endfor %}
+                            {% else %}
+                                <li class="list-group-item">
+                                    <strong>Greeting:</strong> Personal greeting with name
+                                </li>
+                                <li class="list-group-item">
+                                    <strong>Hook:</strong> Reference to profile information
+                                </li>
+                                <li class="list-group-item">
+                                    <strong>Question:</strong> Open-ended question to encourage response
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

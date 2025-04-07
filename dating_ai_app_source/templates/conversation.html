@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+
+{% block title %}Dating App AI Assistant - Conversation{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('conversations') }}">Conversations</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ match.name }}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Conversation -->
+    <div class="col-lg-8 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-chat-text me-2"></i>Conversation with {{ match.name }}
+                </h5>
+                <div>
+                    <button class="btn btn-sm btn-light monitor-button" 
+                            data-conversation-id="{{ conversation.id }}" 
+                            data-action="{{ 'stop' if conversation.monitoring else 'start' }}">
+                        <i class="bi bi-{{ 'stop-circle' if conversation.monitoring else 'play-circle' }} me-1"></i>
+                        {{ 'Stop' if conversation.monitoring else 'Start' }} Monitoring
+                    </button>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div id="messages-container" class="message-container p-3" style="max-height: 500px; overflow-y: auto;">
+                    {% if messages %}
+                        {% for message in messages %}
+                        <div class="message {{ 'message-user' if message.sender_type == 'user' else 'message-match' }}">
+                            <div id="message-display-{{ message.id }}">
+                                <div id="message-content-{{ message.id }}">{{ message.content }}</div>
+                                <div class="message-time">
+                                    {{ message.sent_at|format_datetime }}
+                                    {% if message.ai_generated %}
+                                    <span class="badge bg-info ms-2">AI</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div id="message-edit-{{ message.id }}" class="d-none">
+                                <textarea id="message-edit-textarea-{{ message.id }}" class="form-control mb-2">{{ message.content }}</textarea>
+                                <div class="d-flex justify-content-end">
+                                    <button class="btn btn-sm btn-secondary cancel-edit-button me-2" data-message-id="{{ message.id }}">Cancel</button>
+                                    <button class="btn btn-sm btn-primary save-edit-button" data-message-id="{{ message.id }}">Save</button>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="bi bi-chat-square-text display-4 text-muted mb-3"></i>
+                            <p>No messages in this conversation yet.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card-footer">
+                <div class="d-grid">
+                    <a href="{{ url_for('generate_response', conversation_id=conversation.id) }}" class="btn btn-primary">
+                        <i class="bi bi-reply me-2"></i>Generate Response
+                    </a>
+                </div>
+                <!-- Hidden input to store last message timestamp for polling -->
+                <input type="hidden" id="last-timestamp" value="{{ messages[-1].sent_at if messages else '' }}">
+            </div>
+        </div>
+    </div>
+    
+    <!-- Match Info and Insights -->
+    <div class="col-lg-4">
+        <!-- Match Info -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-person-circle me-2"></i>{{ match.name }}, {{ match.age }}</h5>
+            </div>
+            <div class="card-body">
+                {% if match.photos %}
+                <img src="{{ match.photos.split(',')[0] if match.photos is string else match.photos[0] }}" class="img-fluid rounded mb-3" alt="{{ match.name }}">
+                {% else %}
+                <div class="bg-light d-flex align-items-center justify-content-center rounded mb-3" style="height: 150px;">
+                    <i class="bi bi-person-circle text-muted" style="font-size: 4rem;"></i>
+                </div>
+                {% endif %}
+                
+                {% if match.bio %}
+                <p class="small">{{ match.bio[:150] }}{% if match.bio|length > 150 %}...{% endif %}</p>
+                {% endif %}
+                
+                {% if match.interests %}
+                <div class="d-flex flex-wrap gap-1 mb-3">
+                    {% set interests = match.interests.split(',') if match.interests is string else match.interests %}
+                    {% for interest in interests[:5] %}
+                    <span class="badge bg-secondary">{{ interest }}</span>
+                    {% endfor %}
+                    {% if interests|length > 5 %}
+                    <span class="badge bg-light text-dark">+{{ interests|length - 5 }} more</span>
+                    {% endif %}
+                </div>
+                {% endif %}
+                
+                <div class="d-grid">
+                    <a href="{{ url_for('match_detail', match_id=match.id) }}" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-info-circle me-2"></i>View Full Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Conversation Insights -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-graph-up me-2"></i>Conversation Insights</h5>
+            </div>
+            <div class="card-body">
+                {% if insights %}
+                <div class="mb-3">
+                    <h6>Conversation Stage:</h6>
+                    <span class="badge bg-primary">{{ insights.stage|default('Initial') }}</span>
+                </div>
+                
+                <div class="mb-3">
+                    <h6>Message Count:</h6>
+                    <div class="d-flex justify-content-between">
+                        <span>You: {{ insights.user_message_count|default(0) }}</span>
+                        <span>Match: {{ insights.match_message_count|default(0) }}</span>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <h6>Response Rate:</h6>
+                    <div class="progress" style="height: 20px;">
+                        {% set response_rate = insights.response_rate|default(0) * 100 %}
+                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ response_rate }}%;" 
+                             aria-valuenow="{{ response_rate }}" aria-valuemin="0" aria-valuemax="100">
+                            {{ "%.0f"|format(response_rate) }}%
+                        </div>
+                    </div>
+                </div>
+                
+                {% if insights.common_words %}
+                <div class="mb-3">
+                    <h6>Common Topics:</h6>
+                    <div class="d-flex flex-wrap gap-1">
+                        {% for word in insights.common_words[:5] %}
+                        <span class="badge bg-info">{{ word.word }} ({{ word.count }})</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if insights.insights %}
+                <div>
+                    <h6>Suggestions:</h6>
+                    <ul class="list-group list-group-flush">
+                        {% for insight in insights.insights %}
+                        <li class="list-group-item">
+                            {% if insight.type == 'warning' %}
+                            <i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>
+                            {% elif insight.type == 'suggestion' %}
+                            <i class="bi bi-lightbulb-fill text-primary me-2"></i>
+                            {% else %}
+                            <i class="bi bi-info-circle-fill text-info me-2"></i>
+                            {% endif %}
+                            {{ insight.message }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+                
+                {% else %}
+                <div class="text-center py-3">
+                    <i class="bi bi-graph-up display-4 text-muted mb-3"></i>
+                    <p>Not enough data for insights yet.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Alert Container for JavaScript notifications -->
+<div id="alert-container" class="position-fixed bottom-0 end-0 p-3" style="z-index: 5"></div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Setup conversation monitoring
+        setupConversationMonitoring();
+        
+        // Setup message editing
+        setupMessageEditing();
+        
+        // Scroll to bottom of messages container
+        const messagesContainer = document.getElementById('messages-container');
+        if (messagesContainer) {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        // Check for new messages every 10 seconds if monitoring is active
+        {% if conversation.monitoring %}
+        const conversationId = '{{ conversation.id }}';
+        const lastTimestampInput = document.getElementById('last-timestamp');
+        
+        setInterval(function() {
+            const lastTimestamp = lastTimestampInput.value;
+            checkNewMessages(conversationId, lastTimestamp);
+        }, 10000);
+        {% endif %}
+    });
+</script>
+{% endblock %}

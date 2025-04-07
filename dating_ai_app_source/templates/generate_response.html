@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}Dating App AI Assistant - Generate Response{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('conversations') }}">Conversations</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('conversation', conversation_id=conversation.id) }}">{{ match.name }}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Generate Response</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Conversation Preview -->
+    <div class="col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-chat-text me-2"></i>Conversation Context</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="message-container p-3" style="max-height: 400px; overflow-y: auto;">
+                    {% if conversation.messages %}
+                        {% for message in conversation.messages[-5:] %}
+                        <div class="message {{ 'message-user' if message.sender_type == 'user' else 'message-match' }}">
+                            {{ message.content }}
+                            <div class="message-time">{{ message.sent_at|format_datetime }}</div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <p>No previous messages in this conversation.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card-footer">
+                <a href="{{ url_for('conversation', conversation_id=conversation.id) }}" class="btn btn-outline-primary w-100">
+                    <i class="bi bi-chat-text me-2"></i>View Full Conversation
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Response Generation -->
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-reply me-2"></i>Generated Response</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{{ url_for('generate_response', conversation_id=conversation.id) }}">
+                    <input type="hidden" name="response_data" value="{{ response_data }}">
+                    
+                    <div class="mb-4">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <p class="mb-0">{{ response.content }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="editedContent" class="form-label">Edit Response (Optional):</label>
+                        <textarea class="form-control" id="editedContent" name="edited_content" rows="4">{{ response.content }}</textarea>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('conversation', conversation_id=conversation.id) }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-2"></i>Back to Conversation
+                        </a>
+                        
+                        <div>
+                            <button type="submit" name="action" value="edit" class="btn btn-outline-primary me-2">
+                                <i class="bi bi-pencil me-2"></i>Edit & Send
+                            </button>
+                            <button type="submit" name="action" value="send" class="btn btn-primary">
+                                <i class="bi bi-send me-2"></i>Send as is
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-lightbulb me-2"></i>Response Analysis</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <h6>Response Type:</h6>
+                        <span class="badge bg-primary">{{ response.type|default('Follow-up') }}</span>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <h6>Context Relevance:</h6>
+                        <div class="progress" style="height: 25px;">
+                            {% set relevance = response.context_relevance|default(90) %}
+                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ relevance }}%;" 
+                                 aria-valuenow="{{ relevance }}" aria-valuemin="0" aria-valuemax="100">
+                                {{ relevance }}%
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-12">
+                        <h6>Response Elements:</h6>
+                        <ul class="list-group">
+                            {% if response.elements %}
+                                {% for element in response.elements %}
+                                <li class="list-group-item">
+                                    <strong>{{ element.type }}:</strong> {{ element.content }}
+                                </li>
+                                {% endfor %}
+                            {% else %}
+                                <li class="list-group-item">
+                                    <strong>Acknowledgment:</strong> Reference to previous message
+                                </li>
+                                <li class="list-group-item">
+                                    <strong>Content:</strong> Relevant response to the conversation
+                                </li>
+                                <li class="list-group-item">
+                                    <strong>Question:</strong> Open-ended question to continue conversation
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

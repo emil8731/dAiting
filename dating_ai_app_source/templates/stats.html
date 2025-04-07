@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+
+{% block title %}Dating App AI Assistant - Statistics{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h1 class="mb-3">Statistics</h1>
+        <p class="lead">View detailed statistics and insights about your dating app activity.</p>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <form class="row g-3" method="get" action="{{ url_for('stats') }}">
+                    <div class="col-md-4">
+                        <label for="daysFilter" class="form-label">Time Period</label>
+                        <select class="form-select" id="daysFilter" name="days">
+                            <option value="7" {% if days == 7 %}selected{% endif %}>Last 7 days</option>
+                            <option value="30" {% if days == 30 %}selected{% endif %}>Last 30 days</option>
+                            <option value="90" {% if days == 90 %}selected{% endif %}>Last 90 days</option>
+                            <option value="365" {% if days == 365 %}selected{% endif %}>Last year</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-filter me-2"></i>Apply Filter
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Overview Stats -->
+<div class="row g-4 mb-5">
+    <div class="col-md-3">
+        <div class="card stat-card h-100">
+            <div class="stat-icon">
+                <i class="bi bi-people-fill"></i>
+            </div>
+            <div class="stat-value">{{ stats.total_matches }}</div>
+            <div class="stat-label">Total Matches</div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card stat-card h-100">
+            <div class="stat-icon">
+                <i class="bi bi-chat-dots-fill"></i>
+            </div>
+            <div class="stat-value">{{ stats.total_conversations }}</div>
+            <div class="stat-label">Active Conversations</div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card stat-card h-100">
+            <div class="stat-icon">
+                <i class="bi bi-envelope-fill"></i>
+            </div>
+            <div class="stat-value">{{ stats.total_messages }}</div>
+            <div class="stat-label">Total Messages</div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card stat-card h-100">
+            <div class="stat-icon">
+                <i class="bi bi-graph-up"></i>
+            </div>
+            <div class="stat-value">{{ "%.0f"|format(stats.response_rate * 100) if stats.response_rate else 0 }}%</div>
+            <div class="stat-label">Response Rate</div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Message Activity Chart -->
+    <div class="col-lg-8 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-bar-chart me-2"></i>Message Activity (Last {{ days }} days)</h5>
+            </div>
+            <div class="card-body">
+                {% if activity.daily_counts %}
+                <canvas id="activity-chart" data-activity='{{ activity.daily_counts|tojson }}'></canvas>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="bi bi-bar-chart display-4 text-muted mb-3"></i>
+                    <p>No message activity data available for the selected period.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Platform Distribution -->
+    <div class="col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-pie-chart me-2"></i>Platform Distribution</h5>
+            </div>
+            <div class="card-body">
+                {% if stats.matches_by_platform %}
+                <canvas id="platform-chart" data-platforms='{{ stats.matches_by_platform|tojson }}'></canvas>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="bi bi-diagram-3 display-4 text-muted mb-3"></i>
+                    <p>No platform distribution data available.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Hourly Distribution -->
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-clock me-2"></i>Hourly Message Distribution</h5>
+            </div>
+            <div class="card-body">
+                {% if activity.hourly_distribution %}
+                <canvas id="hourly-chart" data-hourly='{{ activity.hourly_distribution|tojson }}'></canvas>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="bi bi-clock display-4 text-muted mb-3"></i>
+                    <p>No hourly distribution data available.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- AI Message Stats -->
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-robot me-2"></i>AI Message Statistics</h5>
+            </div>
+            <div class="card-body">
+                {% if stats.ai_generated_count is defined %}
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <h6>AI-Generated Messages:</h6>
+                        <h3>{{ stats.ai_generated_count }}</h3>
+                    </div>
+                    
+                    <div class="col-md-6 mb-4">
+                        <h6>AI-Approved Messages:</h6>
+                        <h3>{{ stats.ai_approved_count }}</h3>
+                    </div>
+                    
+                    <div class="col-md-12">
+                        <h6>AI Approval Rate:</h6>
+                        <div class="progress" style="height: 25px;">
+                            {% set approval_rate = stats.ai_approval_rate * 100 %}
+                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ approval_rate }}%;" 
+                                 aria-valuenow="{{ approval_rate }}" aria-valuemin="0" aria-valuemax="100">
+                                {{ "%.1f"|format(approval_rate) }}%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="bi bi-robot display-4 text-muted mb-3"></i>
+                    <p>No AI message statistics available.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Conversation Metrics -->
+    <div class="col-lg-12 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-chat-square-text me-2"></i>Conversation Metrics</h5>
+            </div>
+            <div class="card-body">
+                {% if stats.conversation_metrics %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Metric</th>
+                                <th>Value</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Average Conversation Length</td>
+                                <td>{{ "%.1f"|format(stats.conversation_metrics.avg_length) }} messages</td>
+                                <td>Average number of messages exchanged in a conversation</td>
+                            </tr>
+                            <tr>
+                                <td>Average Response Time</td>
+                                <td>{{ stats.conversation_metrics.avg_response_time }} hours</td>
+                                <td>Average time to respond to a message</td>
+                            </tr>
+                            <tr>
+                                <td>Conversation Success Rate</td>
+                                <td>{{ "%.1f"|format(stats.conversation_metrics.success_rate * 100) }}%</td>
+                                <td>Percentage of conversations that progress beyond initial messages</td>
+                            </tr>
+                            <tr>
+                                <td>Average Message Length</td>
+                                <td>{{ stats.conversation_metrics.avg_message_length }} characters</td>
+                                <td>Average length of your messages</td>
+                            </tr>
+                            <tr>
+                                <td>Question Rate</td>
+                                <td>{{ "%.1f"|format(stats.conversation_metrics.question_rate * 100) }}%</td>
+                                <td>Percentage of your messages that include questions</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="bi bi-chat-square-text display-4 text-muted mb-3"></i>
+                    <p>No conversation metrics available.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeCharts();
+    });
+</script>
+{% endblock %}
